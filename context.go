@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 )
 
 type H map[string]interface{}
@@ -18,6 +19,7 @@ type Context struct {
 	handlers   []HandlerFunc
 	index      int
 	engine     *Engine
+	queryCache url.Values
 }
 
 func (c *Context) Next() {
@@ -33,9 +35,43 @@ func (c *Context) Fail(code int, err string) {
 		"message": err,
 	})
 }
+func (c *Context) initQueryCache() {
+	if c.queryCache == nil {
+		if c.Req != nil {
+			c.queryCache = c.Req.URL.Query()
+		} else {
+			c.queryCache = url.Values{}
+		}
+	}
+}
 
 func (c *Context) Query(key string) string {
 	return c.Req.URL.Query().Get(key)
+}
+
+func (c *Context) GetQuery(key string) (string, bool) {
+	if values, ok := c.GetQueryArray(key); ok {
+		return values[0], ok
+	}
+	return "", false
+}
+
+func (c *Context) DefaultQuery(key string, defaultValue string) string {
+	// a := c.Req.URL.Query()
+	return ""
+}
+
+func (c *Context) QueryArray(key string) []string {
+	values, _ := c.GetQueryArray(key)
+	return values
+}
+
+func (c *Context) GetQueryArray(key string) ([]string, bool) {
+	c.initQueryCache()
+	if values, ok := c.queryCache[key]; ok && len(values) > 0 {
+		return values, true
+	}
+	return []string{}, false
 }
 
 func (c *Context) Param(key string) string {

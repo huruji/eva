@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/huruji/eva/eva"
+	"github.com/huruji/eva"
 )
 
 func onlyForV2() eva.HandlerFunc {
