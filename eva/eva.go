@@ -3,6 +3,7 @@ package eva
 import (
 	"log"
 	"net/http"
+	"strings"
 )
 
 type HandlerFunc func(c *Context)
@@ -12,6 +13,10 @@ type RouterGroup struct {
 	middlewares []HandlerFunc
 	parent      *RouterGroup
 	engine      *Engine
+}
+
+func (group *RouterGroup) Use(middlewares ...HandlerFunc) {
+	group.middlewares = append(group.middlewares, middlewares...)
 }
 
 func (group *RouterGroup) Group(prefix string) *RouterGroup {
@@ -46,7 +51,15 @@ type Engine struct {
 }
 
 func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	var middlewares []HandlerFunc
+	path := req.URL.Path
+	for _, group := range engine.groups {
+		if strings.HasPrefix(path, group.prefix) {
+			middlewares = append(middlewares, group.middlewares...)
+		}
+	}
 	c := newContext(w, req)
+	c.handlers = middlewares
 	engine.router.handle(c)
 }
 
