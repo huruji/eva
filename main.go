@@ -25,6 +25,7 @@ func main() {
 	r.GET("/", func(c *eva.Context) {
 		c.HTML(http.StatusOK, "<h1>Hello eva</h1>")
 	})
+	r.Static("/assets", "./static")
 
 	v2 := r.Group("/v2")
 	v2.Use(onlyForV2()) // v2 group middleware
