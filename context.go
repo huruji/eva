@@ -20,6 +20,12 @@ type Context struct {
 	index      int
 	engine     *Engine
 	queryCache url.Values
+	formCache  url.Values
+}
+
+func (c *Context) Param(key string) string {
+	value, _ := c.Params[key]
+	return value
 }
 
 func (c *Context) Next() {
@@ -76,13 +82,23 @@ func (c *Context) GetQueryArray(key string) ([]string, bool) {
 	return []string{}, false
 }
 
-func (c *Context) Param(key string) string {
-	value, _ := c.Params[key]
-	return value
+func (c *Context) initFormCache() {
+	if c.formCache == nil {
+		c.formCache = make(url.Values)
+
+	}
 }
 
 func (c *Context) PostForm(key string) string {
 	return c.Req.FormValue(key)
+}
+
+func (c *Context) DefaultPostForm(key string, defaultValue string) string {
+	val := c.PostForm(key)
+	if val == "" {
+		return defaultValue
+	}
+	return val
 }
 
 func (c *Context) Status(code int) {
