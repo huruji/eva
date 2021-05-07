@@ -57,8 +57,10 @@ func (c *Context) GetQuery(key string) (string, bool) {
 }
 
 func (c *Context) DefaultQuery(key string, defaultValue string) string {
-	// a := c.Req.URL.Query()
-	return ""
+	if val, ok := c.GetQuery(key); ok {
+		return val
+	}
+	return defaultValue
 }
 
 func (c *Context) QueryArray(key string) []string {
